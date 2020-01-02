@@ -9,56 +9,53 @@
 #include <queue>
 using namespace std;
 using namespace std::chrono;
-
+// Η struct item περιέχει τα στοιχεία κάθε αντικειμένου
 struct item
 {
-    int id;         
-    int profit;     
-    int weight;     
-    int bound;      
-    int level;      
-    std::vector<int> itemList; 
+    int id;         // αριθμός αντικειμένου με τη σειρά που βρίσκεται στο αρχείο
+    int profit;     // αξία
+    int weight;     // βάρος
+    int bound;      //φραγη
+    int level;      //επίπεδο δεντρου
+    std::vector<int> itemList; //λιστα για τις λυσεις του branch and bound
 };
 int time_out = 10;
-// Ïñßæïõìå Ýíá struct ôï ïðïßï èá áðïèçêåýåé óå ìéá ëßóôá ìå ôá åðéìÝñïõò óôïé÷åßá
-// ôùí áíôéêåéìÝíùí êáé ôç óõíïëéêÞ ÷ùñéêüôçôá ôïõ óáêéäßïõ.
-// Ãéá ôçí ðåñßðôùóç ðïõ ï õðïëïãéóìüò ìðïñåß íá äéáñêÝóåé ðïëý ïñßæïõìå êáé Ýíá ÷ñüíï äéáêïðÞò ôçò äéáäéêáóßáò
+
 struct knapsack_problem
 {
-    std::vector<item> items;     // Ëßóôá ìå ôá óõíïëéêÜ áíôéêåßìåíá
-    int capacity;           // ×ùñçôéêüôçôá óáêéäßïõ
-    int time_limit = 10;      // ×ñüíïò äéáêïðÞò ôïõ õðïëïãéóìïý áí îåðåñáóôåß óå  seconds
+    std::vector<item> items;     // Λίστα με τα συνολικά αντικείμενα
+    int capacity;               // Χωρητικότητα σακιδίου
+    int time_limit = 10;        // Χρόνος διακοπής του υπολογισμού αν ξεπεραστεί σε  seconds
 };
 int last_sol_time = 0;
 /*read_data
-
-   Ç óõíÜñôçóç read_data äÝ÷åôáé ùò ðáñÜìåôñï ôï üíïìá åíüò áñ÷åßïõ ìå äåäïìÝíá knapsack êáé
-   åðéóôñÝöåé ôï ðåñéå÷üìåíï óå ìïñöÞ (struct) knapsack_problem
+   Η συνάρτηση read_data δέχεται ως παράμετρο το όνομα ενός αρχείου με δεδομένα knapsack και
+   επιστρέφει το περιεχόμενο σε μορφή (struct) knapsack_problem
  */
 knapsack_problem read_data(std::string& fn) {
-    std::ifstream fin(fn);     // Ðñïóðáèïýìå íá áíïßîïõìå ôï áñ÷åßï
-    if (!fin.good()) {     // ÅëÝã÷ïõìå áí äåí Ý÷åé áíïé÷èåß
-        std::cerr << "Error opening file " << fn << std::endl;   // åêôõðþíïõìå ìÞíõìá ëÜèïõò óå áõôÞ ôçí ðåñßðôùóç
+    std::ifstream fin(fn);
+    if (!fin.good()) {
+        std::cerr << "Error opening file " << fn << std::endl;
         system("pause");
-        exit(-1);         // ÐÜìå ðëáôåßá ãéá êáöÝ
+        exit(-1);
     }
 
-    knapsack_problem ks;  // Äçìéïõñãïýìå ìéá ìåôáâëçôÞ ôýðïõ knapsack_problem
-                          // óå áõôÞ èá áðïèçkåõôïýí ôá óôïé÷åßá ôïõ áñ÷åßïõ knapsack
-    int items_number;     // Ïñßæïõìå ìéá ìåôáâëçôÞ items_number ãéá íá áðïèçêåýïõìå ôïí
-                          // áñéèìü ôùí áíôéêåéìÝíùí ðïõ âñßóêïíôáé óôï áñ÷åßï
-    fin >> items_number;  // ÄéáâÜæïõìå áðü ôçí ðñþôç ãñáììÞ ôïí áñéèìü ôùí áíôéêåéìÝíùí êáé ôïí êñáôÜìå óôçí items_number
-    for (int i = 0; i < items_number; i++)  // Ãéá üóá åßíáé ôá áíôéêåßìåíá ôïõ áñ÷åßïõ èá ôñÝîïõìå ôïí ðáñáêÜôù êþäéêá
-                          // ãéá íá äéáâÜóïõìå ôá óôïé÷åßá êÜèå áíôéêåéìÝíïõ
+    knapsack_problem ks;
+
+    int items_number;
+
+    fin >> items_number;
+    for (int i = 0; i < items_number; i++)
+
     {
-        item an_item;     // Ç ìåôáâëçôÞ áõôÞ êñáôÜåé êÜèå öïñÜ ôá óôïé÷åßá êÜèå áíôéêåéìÝíïõ áðü ôï áñ÷åßï
-        fin >> an_item.id;      // ÄéáâÜæïõìå ôï id (óåéñÜ ôïõ áíôéêåéìÝíïõ óôï áñ÷åßï)
-        fin >> an_item.profit;  // ÄéáâÜæïõìå ôçí áîßá êáé ôçí áðïèçêåýïõìå óôçí an_item.profit
-        fin >> an_item.weight;  // ÄéáâÜæïõìå ôï âÜñïò êáé ôï áðïèçêåýïõìå óôï an_item.weight
-        ks.items.push_back(an_item);  // ÅéóÜãïõìå ôï an_item óôï ôÝëïò ôçò ëßóôáò ôïõ ks (knapsack_problem)
+        item an_item;
+        fin >> an_item.id;
+        fin >> an_item.profit;
+        fin >> an_item.weight;
+        ks.items.push_back(an_item);
     }
-    fin >> ks.capacity;         // ÔÝëïò äéáâÜæïõìå ôçí ÷ùñçôéêüôçôá ôïõ óáêéäßïõ êáé ôçí áðïèçêåýïõìå óôï ks.capacity
-    return ks;  // åðéóôñÝöïõìå ìéá äïìÞ ôýðïõ knapsack_problem ç ïðïßá ðåñéÝ÷åé üëá ôá óôoé÷åßá ôïõ óõãêåêñéìÝíïõ ðñïâëÞìáôïò
+    fin >> ks.capacity;
+    return ks;
 }
 
 bool cmp(struct item a, struct item b)
@@ -73,22 +70,22 @@ std::vector <item> greedy_approach_solver(knapsack_problem& ks)
 {
     auto begin = std::chrono::high_resolution_clock::now();
     std::cout << "Greedy Approach Solver\n";
-    std::vector<item> itemsHolder(ks.items);    // äçìéïõñãïýìå Ýíá áíôéãñáöï ôïõ ðßíáêá ôùí áíôéêåéìÝíùí þóôå íá ãßíåé ôáîéíüìéóç ìüíï óôï áíôéãñáöï êáé íá ìçí áëëáîåé ç óåéñÜ óôïí áñ÷éêü ðßíáêá
+    std::vector<item> itemsHolder(ks.items);    // δημιουργούμε ένα αντιγραφο του πίνακα των αντικειμένων ώστε να γίνει ταξινόμιση μόνο στο αντιγραφο και να μην αλλαξει η σειρά στον αρχικό πίνακα
     sort(itemsHolder.begin(), itemsHolder.end(), cmp);
-    int current_weight = 0;              // ÔñÝ÷ïí óõíïëéêü âÜñïò êáôá ôïí õðïëïãéóìü
-    double finalprofit = 0.0;        // Ðïóïóôü åðéôõ÷ßáò: óõíïëéêü âÜñïò áíôéêåéìÝíùí ôïõ óáêéäßïõ / ÷ùñçôéêüôçôá
+    int current_weight = 0;
+    double finalprofit = 0.0;
     std::vector<item> sol_list;
-    // Looping through all Items
+
     for (int i = 0; i < itemsHolder.size(); i++) {
         item tempItem = itemsHolder.at(i);
-        // If adding Item won't overflow, add it completely
+
         if (current_weight + tempItem.weight <= ks.capacity)
         {
             sol_list.push_back(tempItem);
             current_weight += tempItem.weight;
             finalprofit += tempItem.profit;
         }
-        // If we can't add current Item, add fractional part of it
+
         else
         {
             int remain = ks.capacity - current_weight;
@@ -109,7 +106,7 @@ std::vector <item> greedy_approach_solver(knapsack_problem& ks)
     return sol_list;
 }
 
-/*2  Ârute Force Solver get_profit */
+/*2  Βrute Force Solver get_profit */
 int get_profit(knapsack_problem& ks, std::vector<item>& sol)
 {
     int total_profit = 0;
@@ -189,33 +186,33 @@ std::vector <int>  branch_and_bound(int W, item arr[], int n) {
     int max_weight = 0;
     std::vector<int> selectedItems;
 
-    while (!Q.empty()) {        // Ç ïõñÜ ðåñéÝ÷åé ôá áíôéêåßìåíá ðïõ ðñ´ðåé íá åëåãèïýí. Åöüóïí äåí åßíáé Üäåéá óõíå÷ßæïõìå
-        u = Q.front();          // ÊñáôÜìå óôç u ôï ðñþôï áíôéêåßìåíï áðü ôçí ïõñÜ
-        Q.pop();                // êáé ìåôÜ ôï áöáéñïýìå áöïý èá åëåãèåß ðáñáêÜôù
-        if (u.level == -1) v.level = 0;    // Ôçí ðñþôç öïñÜ ðïõ èá åêôåëåóèåß ôï loop ç u.level åßíáé -1 êáé ôçí êÜíïõìå 0
-        if (u.level == n - 1) continue;    // åÜí öôÜóïõìå óôï ôåëåõôáßï áíôéêåßìåíï óôáìáôÜ ìå êáé ðÜìå íá åîåôÜóïõìå ôï åðüìåíï ôçò ïõñÜò
-        v.level = u.level + 1;  // Ï Ýëåã÷ïò èá ãßíåé óôï åðüìåíï level (áíôéêåßìåíï)
-        v.weight = u.weight + arr[v.level].weight;    //áðïèçêåýïõìå óôç v ôï åðüìåíï áíôéêåßìåíï êáé ðñïóèÝôïõìå ôï ìÝ÷ñé ôþñá âÜñïò êáé áîßá
+    while (!Q.empty()) {
+        u = Q.front();
+        Q.pop();
+        if (u.level == -1) v.level = 0;
+        if (u.level == n - 1) continue;
+        v.level = u.level + 1;
+        v.weight = u.weight + arr[v.level].weight;
         v.profit = u.profit + arr[v.level].profit;
         v.id = arr[v.level].id;
-        v.itemList.clear();                           // ßóùò ôæÜìðá íá ôï Ýâáëá áõôü. Íá ôï îáíáäù óôï ôÝëïò
+        v.itemList.clear();
         v.itemList = u.itemList;
         v.itemList.push_back(v.id);
-        if (v.weight <= W && v.profit > max_profit) {  // åÜí ôï âÜñïò äåí Ý÷åé îåðåñÜóåé ôï ìÝãéóôï âÜñïò êáé ç áîßá ôïõ äåí åßíáé ìéêñüôåñç áðü áõôÞ ðïõ ìÝ÷ñé ôþñá Ý÷ïõìå
-            max_profit = v.profit;                     // åðéëÝãïõìå ôï áíôéêåßìåíï êñáôþíôáò ôï ùò êáëýôåñç ìÝ÷ñé ôþñá åðéëïãÞ ãéá ôï âÜñïò êáé ôçí áîßá
+        if (v.weight <= W && v.profit > max_profit) {
+            max_profit = v.profit;
             max_weight = v.weight;
-            selectedItems = v.itemList;               // êñáôÜìå êáé ôç ëßóôá ìå ôá åðéëåãìÝíá áíôéêåßìåíá ôïõ óõíäéáóìïý ùò ç êáëýôåñç ìÝ÷ñé ôþñá
+            selectedItems = v.itemList;
         }
-        v.bound = bound(v, n, W, arr);                // õðïëïãßæïõìå ôçí ìÝãéóôç áîßá ãéá üóá áíôéêåßìåíá áêïëïõèïýí
-        if (v.bound > max_profit) {                    // áí ç ìÝãéóôç áîßá åßíáé êáëýôåñç áðü áõôÞ ðïõ Ý÷ïõìå
-            Q.push(v);                                // èá ðñÝðåé íá åëåãèåß ï êëÜäïò ôïõ v
+        v.bound = bound(v, n, W, arr);
+        if (v.bound > max_profit) {
+            Q.push(v);
         }
-        v.weight = u.weight;                          // ôþñá èá åéóÜãïõìå îáíÜ ôï áíôéêåßìåíï óôçí ïõñÜ ãéá Ýëåã÷ï áëëÜ áõôÞ ôçí öïñÜ äåí èá óõìðåñéëÜâïõìå ôçí äéêÞ ôïõ áîßá êáé âÜñïò
-        v.profit = u.profit;                          // ïé ëýóåéò ðïõ èá äçìéïõñãçèïýí äåí èá óõìðåñéëáìâÜíïõí ôï ôñÝ÷ïí áíôéêåßìåíï
+        v.weight = u.weight;
+        v.profit = u.profit;
         v.id = u.id;
         v.itemList = u.itemList;
-        v.bound = bound(v, n, W, arr);                // õðïëïãßæïõìå îáíÜ ôçí ìÝãéóôç äõíáôÞ áîßá ãéá ôá áíôéêåßìåíá ðïõ áêïëïõèïýí
-        if (v.bound > max_profit) Q.push(v);           // åÜí õðÜñ÷åé ðåñßðôùóç êáëýôåñçò ëýóçò åéóÜãïõìå ôï áíôéêåßìåíï óôçí ïõñÜ ãéá Ýëåã÷ï
+        v.bound = bound(v, n, W, arr);
+        if (v.bound > max_profit) Q.push(v);
         auto finish = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - begin);
         last_sol_time = duration.count()/1000.0;
@@ -240,7 +237,7 @@ std::vector <item>  branch_and_bound_solver(knapsack_problem& ks) {
     std::cout << "Branch and Bound Solver\n";
     std::vector <int> solutionIDs = branch_and_bound(ks.capacity, arr, n);
     std::vector <item> solution;
-    for (int i = 0; i < solutionIDs.size(); i++) {       // Äçìéïõñãïýìå ìéá ëßóôá ìå ôá áíôéêåßìåíá ðïõ åðéëÝ÷èçêáí óôç ëýóç
+    for (int i = 0; i < solutionIDs.size(); i++) {
         int itemIndex = solutionIDs[i] - 1;
         solution.push_back(ks.items[itemIndex]);
     }
@@ -255,14 +252,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     std::cout << "Dynamic Programming Solver\n";
     auto begin = std::chrono::high_resolution_clock::now();
     bool isOutOfTime = false;
-    int W = ks.capacity;                      // áðïèçêåýïõìå ôçí ÷ùñçôéêüôçôá ôïõ óáêéäßïõ óôçí W
-    int n = ks.items.size();                   // áðïèçêåýïõìå ôoí áñéèìü ôùí áíôéêåéìÝíùí óôï n
-    std::vector<int> w(n, 0);   // create a vector to hold "size" int's
-    std::vector<int> v(n, 0);   // create a vector to hold "size" int's
+    int W = ks.capacity;
+    int n = ks.items.size();
+    std::vector<int> w(n, 0);
+    std::vector<int> v(n, 0);
     int m = 0;
     for (auto& tempItem : ks.items) {
-        w[m] = tempItem.weight;  // ïñßæïõìå Ýíá ðßíáêá w ìåãÝèïõò n  ãéá íá áðïèêåýóïõìå ôï âÜñïò êÜèå áíôéêåéìÝíïõ
-        v[m] = tempItem.profit; // ïñßæïõìå Ýíá ðßíáêá v ìåãÝèïõò n  ãéá íá áðïèêåýóïõìå ôçí áîßá êÜèå áíôéêåéìÝíï
+        w[m] = tempItem.weight;
+        v[m] = tempItem.profit;
         m++;
     }
     int i, wt;
@@ -270,14 +267,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     int W_ = W + 1;
     std::vector<std::vector <int> > K(n_, std::vector<int>(W_, 0));
 
-    for (i = 0; i <= n; i++) {                 // ôñÝ÷ïõìå üëåò ôéò ãñáììÝò ôïõ ðßíáêá Ê êáé ôáõôü÷ñïíá üëá ôá áíôéêåßìåíá (+ 1 óôïé÷åßï áêüìç óôï ôÝëïò)
+    for (i = 0; i <= n; i++) {
 
-        for (wt = 0; wt <= W; wt++) {           // ôñÝ÷ïõìå üëåò ôéò óôÞëåò
-            if (i == 0 || wt == 0) K[i][wt] = 0; // êÜíïõìå 0 ôçí ðñþôç ãñáììÞ êáé óôÞëç ôïõ ðßíáêá
-            else if (w[(i - 1)] <= wt)             // åÜí ôï âÜñïò ôïõ ðñïçãïýìåíïõ áíôéêåéìÝíïõ åßíáé ìéêñüôåñï Þ ßóï ìå ôïí áñéèìü ôçò óôÞëçò
-                K[i][wt] = max(v[(i - 1)] + K[i - 1][wt - w[(i - 1)]], K[i - 1][wt]); // õðïëïãßæïõìå áðü ôçí ó÷Ýóç ôçí ôéìÞ ôïõ óôïé÷åßïõ  ôïõ ðßíáêá
+        for (wt = 0; wt <= W; wt++) {
+            if (i == 0 || wt == 0) K[i][wt] = 0;
+            else if (w[(i - 1)] <= wt)
+                K[i][wt] = max(v[(i - 1)] + K[i - 1][wt - w[(i - 1)]], K[i - 1][wt]);
             else
-                K[i][wt] = K[i - 1][wt];              // äéáöïñåôéêÜ ôï êÜíïõìå ßóï ìå ôï óôïé÷åßï ôçò ðñïçãïýìåíçò ãñáììÞò ôçò ßäéá óôÞëçò
+                K[i][wt] = K[i - 1][wt];
         }
         auto finish = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - begin);
@@ -290,19 +287,19 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     }
 
 
-    std::vector <item> solution;                    // äçìéïõñãïýìå ôï vector ðïõ èá ðåñéÝ÷åé ôá åðéëåãìÝíá óôç ëýóç áíôéêåßìåíá
+    std::vector <item> solution;
     if (!isOutOfTime) {
-        while (n != 0) {                            // ôï n ðåñéÝ÷åé ôçí áñéèìü ôùí áíôéêåéìÝíùí êáé óôïí ðßíáêá äåß÷íåé óôçí ôåëåõôáßá ãñáììÞ
-                                                    // ôñÝ÷ïõìå üëá ôá óôïé÷åßá ôïõ ðßíáêá (áíôßóôñïöá) áðü ôçí ôåëåõôáßá óôÞëç êáé ãñáììÞ ðñïò ôçí áñ÷Þ ôïõ
-            if (K[n][W] != K[n - 1][W]) {           // åëÝã÷ïõìå áí ôï ôñÝ÷ïí óôïé÷åßï ôïõ ðßíáêá åßíáé äéáöïñåôéêü áðü ôï ðñïçãïýìåíï
-                                                    // óå ðåñßðôùóç ðïõ åßíáé, ôï áíôéêåßìåíï áðïôåëåß ìÝñïò ôçò ëýóçò
-                item sol = ks.items.at((n - 1));    // äçìéïõñãïýìå Ýíá struct sol ãéá íá áðïèçêåýïõìå ôï áíôéêåßìåíï ðïõ Ý÷åé åðéëå÷èåß óôç ëýóç
-                solution.push_back(sol);            // ðñïóèÝôïõìå ôï áíôéêåßìåíï óôç ëßóôá ìå ôá åðéëåãìÝíá áíôéêåßíáìå
-                W = W - w[(n - 1)];                 // óõíå÷ßæïõìå ôïí Ýëåã÷ï áðü ôçí ðñïçãïýìåíç óôÞëç. ÄçëáäÞ êÜèå öïñÜ ðïõ âñßóêïõìå Ýíá ìÝñïò ôçò ëýóçò
-                                                    // áëëÜæïõìå óôÞëç ðçãáßíïíôáò ìßá ðßóù
+        while (n != 0) {
+
+            if (K[n][W] != K[n - 1][W]) {
+
+                item sol = ks.items.at((n - 1));
+                solution.push_back(sol);
+                W = W - w[(n - 1)];
+
             }
-            n--;                                    // åíþ áí äåí âñïýìå ìÝñïò ôçò ëýóçò áëëÜæïõìå ãñáììÞ ðçãáßíïíôáò ìßá ãñáììÞ ðßóù ìÝ÷ñé íá åëÝãîïõìå êáé
-                                                    // êáé ôçí äåýôåñç ãñáììÞ ôïõ ðßíáêá (ç ðñþôç åßíáé ìçäåíéóìÝíç)
+            n--;
+
         }
 
    }
@@ -316,14 +313,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     K.clear();
     v.clear();
     w.clear();
-    return solution;                            // åðéóôñÝöïõìå ôï vector solution ôï ïðïßï ðåñéÝ÷åé ôç ëéóôá ìå ôá åðéëåãìÝíá óôç ëýóç áíôéêåßìåíá
+    return solution;
 }
 /* print_solution
-   Ç print_solution äÝ÷åôáé ùò ðáñÜìåôñï ôçí ëýóç åíüò ðñïâëÞìáôïò knapsack_problem
-   êáé åêôõðþíåé ôá óôïé÷åßá ôïõ
+   Η print_solution δέχεται ως παράμετρο την λύση ενός προβλήματος knapsack_problem
+   και εκτυπώνει τα στοιχεία του
  */
 void print_solution(std::vector<item> sol) {
-   // std::string output;
+
     int total_weight = 0;
     int total_profit = 0;
 
@@ -339,7 +336,7 @@ void print_solution(std::vector<item> sol) {
 }
 /* export_solution
 
-   Ç export_solution  áðïèçêåýåé ôç ëýóç åíüò knapsach ðñïâëÞìáôïò óå Ýíá áñ÷åßï
+   Η export_solution  αποθηκεύει τη λύση ενός knapsach προβλήματος σε ένα αρχείο
  */
 void export_solution(knapsack_problem& ks, std::vector<item> sol, std::string& fn)
 {   std::fstream fout;
@@ -350,7 +347,6 @@ void export_solution(knapsack_problem& ks, std::vector<item> sol, std::string& f
         exit(-1);
     }
 
-    std::string output;
      int total_weight = 0;
     int total_profit = 0;
     for (int i = 0;i < sol.size();i++)
@@ -380,7 +376,7 @@ void calc_p_w(std::vector<item>& solution, std::fstream& fout) {
     fout << s;
 }
 /*
-   Ç export_csv âñßóêåé ôéò ëýóåéò ìå üëïõò ôïõò äõíáôïýò áëãüñéèìïõò êáé åîÜãåé ôï áðïôÝëåóìá óå áñ÷åßï CSV
+   Η export_csv βρίσκει τις λύσεις με όλους τους δυνατούς αλγόριθμους και εξάγει το αποτέλεσμα σε αρχείο CSV
  */
 void export_csv(int choice) {
     int n1[] = { 10,50,100,500 };
@@ -393,8 +389,8 @@ void export_csv(int choice) {
     std::fstream fout;
     std::cout << "----- csv_path=" << csv_path << "\n";
     fout.open(csv_path, std::ios::out);
-    if (!fout.good()) {     // ÅëÝã÷ïõìå áí äåí Ý÷åé äçìéïõñãçèåß
-        std::cerr << "--- Error opening file " << csv_path << std::endl;   // åêôõðþíïõìå ìÞíõìá ëÜèïõò óå áõôÞ ôçí ðåñßðôùóç
+    if (!fout.good()) {
+        std::cerr << "--- Error opening file " << csv_path << std::endl;
         system("pause");
         exit(-1);
     }
