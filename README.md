@@ -25,7 +25,7 @@ You can create a CSV files with the solutions of all problems with 6 algorithms
 4. knapsack.exe This is the main executable file. Contains the solvers 
 5. dynamic_prog_ortools.exe Util that used by the main file to solve a problem using the OR-Tools Dynamic algorithm
 6. integer_prog_ortools.exe Util that used by the main file to solve a problem using the OR-Tools Integer algorithm
-7. knapsack_gen.exe Util that used by the main file to create a knapsack problem,you can find more instructions about this in the text file included in the folder.
+7. knapsack_gen.exe Util that used by the main file to create a knapsack problem,you can find more instructions about this in the text file included in the generator folder.
 
 **P.S. All of these files must be in the same folder.** 
 
