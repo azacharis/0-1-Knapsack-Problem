@@ -9,56 +9,53 @@
 #include <queue>
 using namespace std;
 using namespace std::chrono;
-// Η struct item περιέχει τα στοιχεία κάθε αντικειμένου
+// Ξ— struct item Ο€ΞµΟΞΉΞ­Ο‡ΞµΞΉ Ο„Ξ± ΟƒΟ„ΞΏΞΉΟ‡ΞµΞ―Ξ± ΞΊΞ¬ΞΈΞµ Ξ±Ξ½Ο„ΞΉΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ…
 struct item
 {
-    int id;         // αριθμός αντικειμένου με τη σειρά που βρίσκεται στο αρχείο
-    int profit;     // αξία
-    int weight;     // βάρος
-    int bound;      //φραγη
-    int level;      //επίπεδο δεντρου
-    std::vector<int> itemList; //λιστα για τις λυσεις του branch and bound
+    int id;         // Ξ±ΟΞΉΞΈΞΌΟΟ‚ Ξ±Ξ½Ο„ΞΉΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ… ΞΌΞµ Ο„Ξ· ΟƒΞµΞΉΟΞ¬ Ο€ΞΏΟ… Ξ²ΟΞ―ΟƒΞΊΞµΟ„Ξ±ΞΉ ΟƒΟ„ΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ
+    int profit;     // Ξ±ΞΎΞ―Ξ±
+    int weight;     // Ξ²Ξ¬ΟΞΏΟ‚
+    int bound;      //Ο†ΟΞ±Ξ³Ξ·
+    int level;      //ΞµΟ€Ξ―Ο€ΞµΞ΄ΞΏ Ξ΄ΞµΞ½Ο„ΟΞΏΟ…
+    std::vector<int> itemList; //Ξ»ΞΉΟƒΟ„Ξ± Ξ³ΞΉΞ± Ο„ΞΉΟ‚ Ξ»Ο…ΟƒΞµΞΉΟ‚ Ο„ΞΏΟ… branch and bound
 };
 int time_out = 10;
-// Ορίζουμε ένα struct το οποίο θα αποθηκεύει σε μια λίστα με τα επιμέρους στοιχεία
-// των αντικειμένων και τη συνολική χωρικότητα του σακιδίου.
-// Για την περίπτωση που ο υπολογισμός μπορεί να διαρκέσει πολύ ορίζουμε και ένα χρόνο διακοπής της διαδικασίας
+
 struct knapsack_problem
 {
-    std::vector<item> items;     // Λίστα με τα συνολικά αντικείμενα
-    int capacity;           // Χωρητικότητα σακιδίου
-    int time_limit = 10;      // Χρόνος διακοπής του υπολογισμού αν ξεπεραστεί σε  seconds
+    std::vector<item> items;     // Ξ›Ξ―ΟƒΟ„Ξ± ΞΌΞµ Ο„Ξ± ΟƒΟ…Ξ½ΞΏΞ»ΞΉΞΊΞ¬ Ξ±Ξ½Ο„ΞΉΞΊΞµΞ―ΞΌΞµΞ½Ξ±
+    int capacity;               // Ξ§Ο‰ΟΞ·Ο„ΞΉΞΊΟΟ„Ξ·Ο„Ξ± ΟƒΞ±ΞΊΞΉΞ΄Ξ―ΞΏΟ…
+    int time_limit = 10;        // Ξ§ΟΟΞ½ΞΏΟ‚ Ξ΄ΞΉΞ±ΞΊΞΏΟ€Ξ®Ο‚ Ο„ΞΏΟ… Ο…Ο€ΞΏΞ»ΞΏΞ³ΞΉΟƒΞΌΞΏΟ Ξ±Ξ½ ΞΎΞµΟ€ΞµΟΞ±ΟƒΟ„ΞµΞ― ΟƒΞµ  seconds
 };
 int last_sol_time = 0;
 /*read_data
-
-   Η συνάρτηση read_data δέχεται ως παράμετρο το όνομα ενός αρχείου με δεδομένα knapsack και
-   επιστρέφει το περιεχόμενο σε μορφή (struct) knapsack_problem
+   Ξ— ΟƒΟ…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ· read_data Ξ΄Ξ­Ο‡ΞµΟ„Ξ±ΞΉ Ο‰Ο‚ Ο€Ξ±ΟΞ¬ΞΌΞµΟ„ΟΞΏ Ο„ΞΏ ΟΞ½ΞΏΞΌΞ± ΞµΞ½ΟΟ‚ Ξ±ΟΟ‡ΞµΞ―ΞΏΟ… ΞΌΞµ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ξ± knapsack ΞΊΞ±ΞΉ
+   ΞµΟ€ΞΉΟƒΟ„ΟΞ­Ο†ΞµΞΉ Ο„ΞΏ Ο€ΞµΟΞΉΞµΟ‡ΟΞΌΞµΞ½ΞΏ ΟƒΞµ ΞΌΞΏΟΟ†Ξ® (struct) knapsack_problem
  */
 knapsack_problem read_data(std::string& fn) {
-    std::ifstream fin(fn);     // Προσπαθούμε να ανοίξουμε το αρχείο
-    if (!fin.good()) {     // Ελέγχουμε αν δεν έχει ανοιχθεί
-        std::cerr << "Error opening file " << fn << std::endl;   // εκτυπώνουμε μήνυμα λάθους σε αυτή την περίπτωση
+    std::ifstream fin(fn);
+    if (!fin.good()) {
+        std::cerr << "Error opening file " << fn << std::endl;
         system("pause");
-        exit(-1);         // Πάμε πλατεία για καφέ
+        exit(-1);
     }
 
-    knapsack_problem ks;  // Δημιουργούμε μια μεταβλητή τύπου knapsack_problem
-                          // σε αυτή θα αποθηkευτούν τα στοιχεία του αρχείου knapsack
-    int items_number;     // Ορίζουμε μια μεταβλητή items_number για να αποθηκεύουμε τον
-                          // αριθμό των αντικειμένων που βρίσκονται στο αρχείο
-    fin >> items_number;  // Διαβάζουμε από την πρώτη γραμμή τον αριθμό των αντικειμένων και τον κρατάμε στην items_number
-    for (int i = 0; i < items_number; i++)  // Για όσα είναι τα αντικείμενα του αρχείου θα τρέξουμε τον παρακάτω κώδικα
-                          // για να διαβάσουμε τα στοιχεία κάθε αντικειμένου
+    knapsack_problem ks;
+
+    int items_number;
+
+    fin >> items_number;
+    for (int i = 0; i < items_number; i++)
+
     {
-        item an_item;     // Η μεταβλητή αυτή κρατάει κάθε φορά τα στοιχεία κάθε αντικειμένου από το αρχείο
-        fin >> an_item.id;      // Διαβάζουμε το id (σειρά του αντικειμένου στο αρχείο)
-        fin >> an_item.profit;  // Διαβάζουμε την αξία και την αποθηκεύουμε στην an_item.profit
-        fin >> an_item.weight;  // Διαβάζουμε το βάρος και το αποθηκεύουμε στο an_item.weight
-        ks.items.push_back(an_item);  // Εισάγουμε το an_item στο τέλος της λίστας του ks (knapsack_problem)
+        item an_item;
+        fin >> an_item.id;
+        fin >> an_item.profit;
+        fin >> an_item.weight;
+        ks.items.push_back(an_item);
     }
-    fin >> ks.capacity;         // Τέλος διαβάζουμε την χωρητικότητα του σακιδίου και την αποθηκεύουμε στο ks.capacity
-    return ks;  // επιστρέφουμε μια δομή τύπου knapsack_problem η οποία περιέχει όλα τα στoιχεία του συγκεκριμένου προβλήματος
+    fin >> ks.capacity;
+    return ks;
 }
 
 bool cmp(struct item a, struct item b)
@@ -73,22 +70,22 @@ std::vector <item> greedy_approach_solver(knapsack_problem& ks)
 {
     auto begin = std::chrono::high_resolution_clock::now();
     std::cout << "Greedy Approach Solver\n";
-    std::vector<item> itemsHolder(ks.items);    // δημιουργούμε ένα αντιγραφο του πίνακα των αντικειμένων ώστε να γίνει ταξινόμιση μόνο στο αντιγραφο και να μην αλλαξει η σειρά στον αρχικό πίνακα
+    std::vector<item> itemsHolder(ks.items);    // Ξ΄Ξ·ΞΌΞΉΞΏΟ…ΟΞ³ΞΏΟΞΌΞµ Ξ­Ξ½Ξ± Ξ±Ξ½Ο„ΞΉΞ³ΟΞ±Ο†ΞΏ Ο„ΞΏΟ… Ο€Ξ―Ξ½Ξ±ΞΊΞ± Ο„Ο‰Ξ½ Ξ±Ξ½Ο„ΞΉΞΊΞµΞΉΞΌΞ­Ξ½Ο‰Ξ½ ΟΟƒΟ„Ξµ Ξ½Ξ± Ξ³Ξ―Ξ½ΞµΞΉ Ο„Ξ±ΞΎΞΉΞ½ΟΞΌΞΉΟƒΞ· ΞΌΟΞ½ΞΏ ΟƒΟ„ΞΏ Ξ±Ξ½Ο„ΞΉΞ³ΟΞ±Ο†ΞΏ ΞΊΞ±ΞΉ Ξ½Ξ± ΞΌΞ·Ξ½ Ξ±Ξ»Ξ»Ξ±ΞΎΞµΞΉ Ξ· ΟƒΞµΞΉΟΞ¬ ΟƒΟ„ΞΏΞ½ Ξ±ΟΟ‡ΞΉΞΊΟ Ο€Ξ―Ξ½Ξ±ΞΊΞ±
     sort(itemsHolder.begin(), itemsHolder.end(), cmp);
-    int current_weight = 0;              // Τρέχον συνολικό βάρος κατα τον υπολογισμό
-    double finalprofit = 0.0;        // Ποσοστό επιτυχίας: συνολικό βάρος αντικειμένων του σακιδίου / χωρητικότητα
+    int current_weight = 0;
+    double finalprofit = 0.0;
     std::vector<item> sol_list;
-    // Looping through all Items
+
     for (int i = 0; i < itemsHolder.size(); i++) {
         item tempItem = itemsHolder.at(i);
-        // If adding Item won't overflow, add it completely
+
         if (current_weight + tempItem.weight <= ks.capacity)
         {
             sol_list.push_back(tempItem);
             current_weight += tempItem.weight;
             finalprofit += tempItem.profit;
         }
-        // If we can't add current Item, add fractional part of it
+
         else
         {
             int remain = ks.capacity - current_weight;
@@ -109,7 +106,7 @@ std::vector <item> greedy_approach_solver(knapsack_problem& ks)
     return sol_list;
 }
 
-/*2  Βrute Force Solver get_profit */
+/*2  Ξ’rute Force Solver get_profit */
 int get_profit(knapsack_problem& ks, std::vector<item>& sol)
 {
     int total_profit = 0;
@@ -189,33 +186,33 @@ std::vector <int>  branch_and_bound(int W, item arr[], int n) {
     int max_weight = 0;
     std::vector<int> selectedItems;
 
-    while (!Q.empty()) {        // Η ουρά περιέχει τα αντικείμενα που πρ΄πει να ελεγθούν. Εφόσον δεν είναι άδεια συνεχίζουμε
-        u = Q.front();          // Κρατάμε στη u το πρώτο αντικείμενο από την ουρά
-        Q.pop();                // και μετά το αφαιρούμε αφού θα ελεγθεί παρακάτω
-        if (u.level == -1) v.level = 0;    // Την πρώτη φορά που θα εκτελεσθεί το loop η u.level είναι -1 και την κάνουμε 0
-        if (u.level == n - 1) continue;    // εάν φτάσουμε στο τελευταίο αντικείμενο σταματά με και πάμε να εξετάσουμε το επόμενο της ουράς
-        v.level = u.level + 1;  // Ο έλεγχος θα γίνει στο επόμενο level (αντικείμενο)
-        v.weight = u.weight + arr[v.level].weight;    //αποθηκεύουμε στη v το επόμενο αντικείμενο και προσθέτουμε το μέχρι τώρα βάρος και αξία
+    while (!Q.empty()) {
+        u = Q.front();
+        Q.pop();
+        if (u.level == -1) v.level = 0;
+        if (u.level == n - 1) continue;
+        v.level = u.level + 1;
+        v.weight = u.weight + arr[v.level].weight;
         v.profit = u.profit + arr[v.level].profit;
         v.id = arr[v.level].id;
-        v.itemList.clear();                           // ίσως τζάμπα να το έβαλα αυτό. Να το ξαναδω στο τέλος
+        v.itemList.clear();
         v.itemList = u.itemList;
         v.itemList.push_back(v.id);
-        if (v.weight <= W && v.profit > max_profit) {  // εάν το βάρος δεν έχει ξεπεράσει το μέγιστο βάρος και η αξία του δεν είναι μικρότερη από αυτή που μέχρι τώρα έχουμε
-            max_profit = v.profit;                     // επιλέγουμε το αντικείμενο κρατώντας το ως καλύτερη μέχρι τώρα επιλογή για το βάρος και την αξία
+        if (v.weight <= W && v.profit > max_profit) {
+            max_profit = v.profit;
             max_weight = v.weight;
-            selectedItems = v.itemList;               // κρατάμε και τη λίστα με τα επιλεγμένα αντικείμενα του συνδιασμού ως η καλύτερη μέχρι τώρα
+            selectedItems = v.itemList;
         }
-        v.bound = bound(v, n, W, arr);                // υπολογίζουμε την μέγιστη αξία για όσα αντικείμενα ακολουθούν
-        if (v.bound > max_profit) {                    // αν η μέγιστη αξία είναι καλύτερη από αυτή που έχουμε
-            Q.push(v);                                // θα πρέπει να ελεγθεί ο κλάδος του v
+        v.bound = bound(v, n, W, arr);
+        if (v.bound > max_profit) {
+            Q.push(v);
         }
-        v.weight = u.weight;                          // τώρα θα εισάγουμε ξανά το αντικείμενο στην ουρά για έλεγχο αλλά αυτή την φορά δεν θα συμπεριλάβουμε την δική του αξία και βάρος
-        v.profit = u.profit;                          // οι λύσεις που θα δημιουργηθούν δεν θα συμπεριλαμβάνουν το τρέχον αντικείμενο
+        v.weight = u.weight;
+        v.profit = u.profit;
         v.id = u.id;
         v.itemList = u.itemList;
-        v.bound = bound(v, n, W, arr);                // υπολογίζουμε ξανά την μέγιστη δυνατή αξία για τα αντικείμενα που ακολουθούν
-        if (v.bound > max_profit) Q.push(v);           // εάν υπάρχει περίπτωση καλύτερης λύσης εισάγουμε το αντικείμενο στην ουρά για έλεγχο
+        v.bound = bound(v, n, W, arr);
+        if (v.bound > max_profit) Q.push(v);
         auto finish = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - begin);
         last_sol_time = duration.count()/1000.0;
@@ -240,7 +237,7 @@ std::vector <item>  branch_and_bound_solver(knapsack_problem& ks) {
     std::cout << "Branch and Bound Solver\n";
     std::vector <int> solutionIDs = branch_and_bound(ks.capacity, arr, n);
     std::vector <item> solution;
-    for (int i = 0; i < solutionIDs.size(); i++) {       // Δημιουργούμε μια λίστα με τα αντικείμενα που επιλέχθηκαν στη λύση
+    for (int i = 0; i < solutionIDs.size(); i++) {
         int itemIndex = solutionIDs[i] - 1;
         solution.push_back(ks.items[itemIndex]);
     }
@@ -255,14 +252,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     std::cout << "Dynamic Programming Solver\n";
     auto begin = std::chrono::high_resolution_clock::now();
     bool isOutOfTime = false;
-    int W = ks.capacity;                      // αποθηκεύουμε την χωρητικότητα του σακιδίου στην W
-    int n = ks.items.size();                   // αποθηκεύουμε τoν αριθμό των αντικειμένων στο n
-    std::vector<int> w(n, 0);   // create a vector to hold "size" int's
-    std::vector<int> v(n, 0);   // create a vector to hold "size" int's
+    int W = ks.capacity;
+    int n = ks.items.size();
+    std::vector<int> w(n, 0);
+    std::vector<int> v(n, 0);
     int m = 0;
     for (auto& tempItem : ks.items) {
-        w[m] = tempItem.weight;  // ορίζουμε ένα πίνακα w μεγέθους n  για να αποθκεύσουμε το βάρος κάθε αντικειμένου
-        v[m] = tempItem.profit; // ορίζουμε ένα πίνακα v μεγέθους n  για να αποθκεύσουμε την αξία κάθε αντικειμένο
+        w[m] = tempItem.weight;
+        v[m] = tempItem.profit;
         m++;
     }
     int i, wt;
@@ -270,14 +267,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     int W_ = W + 1;
     std::vector<std::vector <int> > K(n_, std::vector<int>(W_, 0));
 
-    for (i = 0; i <= n; i++) {                 // τρέχουμε όλες τις γραμμές του πίνακα Κ και ταυτόχρονα όλα τα αντικείμενα (+ 1 στοιχείο ακόμη στο τέλος)
+    for (i = 0; i <= n; i++) {
 
-        for (wt = 0; wt <= W; wt++) {           // τρέχουμε όλες τις στήλες
-            if (i == 0 || wt == 0) K[i][wt] = 0; // κάνουμε 0 την πρώτη γραμμή και στήλη του πίνακα
-            else if (w[(i - 1)] <= wt)             // εάν το βάρος του προηγούμενου αντικειμένου είναι μικρότερο ή ίσο με τον αριθμό της στήλης
-                K[i][wt] = max(v[(i - 1)] + K[i - 1][wt - w[(i - 1)]], K[i - 1][wt]); // υπολογίζουμε από την σχέση την τιμή του στοιχείου  του πίνακα
+        for (wt = 0; wt <= W; wt++) {
+            if (i == 0 || wt == 0) K[i][wt] = 0;
+            else if (w[(i - 1)] <= wt)
+                K[i][wt] = max(v[(i - 1)] + K[i - 1][wt - w[(i - 1)]], K[i - 1][wt]);
             else
-                K[i][wt] = K[i - 1][wt];              // διαφορετικά το κάνουμε ίσο με το στοιχείο της προηγούμενης γραμμής της ίδια στήλης
+                K[i][wt] = K[i - 1][wt];
         }
         auto finish = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - begin);
@@ -290,19 +287,19 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     }
 
 
-    std::vector <item> solution;                    // δημιουργούμε το vector που θα περιέχει τα επιλεγμένα στη λύση αντικείμενα
+    std::vector <item> solution;
     if (!isOutOfTime) {
-        while (n != 0) {                            // το n περιέχει την αριθμό των αντικειμένων και στον πίνακα δείχνει στην τελευταία γραμμή
-                                                    // τρέχουμε όλα τα στοιχεία του πίνακα (αντίστροφα) από την τελευταία στήλη και γραμμή προς την αρχή του
-            if (K[n][W] != K[n - 1][W]) {           // ελέγχουμε αν το τρέχον στοιχείο του πίνακα είναι διαφορετικό από το προηγούμενο
-                                                    // σε περίπτωση που είναι, το αντικείμενο αποτελεί μέρος της λύσης
-                item sol = ks.items.at((n - 1));    // δημιουργούμε ένα struct sol για να αποθηκεύουμε το αντικείμενο που έχει επιλεχθεί στη λύση
-                solution.push_back(sol);            // προσθέτουμε το αντικείμενο στη λίστα με τα επιλεγμένα αντικείναμε
-                W = W - w[(n - 1)];                 // συνεχίζουμε τον έλεγχο από την προηγούμενη στήλη. Δηλαδή κάθε φορά που βρίσκουμε ένα μέρος της λύσης
-                                                    // αλλάζουμε στήλη πηγαίνοντας μία πίσω
+        while (n != 0) {
+
+            if (K[n][W] != K[n - 1][W]) {
+
+                item sol = ks.items.at((n - 1));
+                solution.push_back(sol);
+                W = W - w[(n - 1)];
+
             }
-            n--;                                    // ενώ αν δεν βρούμε μέρος της λύσης αλλάζουμε γραμμή πηγαίνοντας μία γραμμή πίσω μέχρι να ελέγξουμε και
-                                                    // και την δεύτερη γραμμή του πίνακα (η πρώτη είναι μηδενισμένη)
+            n--;
+
         }
 
    }
@@ -316,14 +313,14 @@ std::vector <item> dynamic_programming_solver(knapsack_problem& ks) {
     K.clear();
     v.clear();
     w.clear();
-    return solution;                            // επιστρέφουμε το vector solution το οποίο περιέχει τη λιστα με τα επιλεγμένα στη λύση αντικείμενα
+    return solution;
 }
 /* print_solution
-   Η print_solution δέχεται ως παράμετρο την λύση ενός προβλήματος knapsack_problem
-   και εκτυπώνει τα στοιχεία του
+   Ξ— print_solution Ξ΄Ξ­Ο‡ΞµΟ„Ξ±ΞΉ Ο‰Ο‚ Ο€Ξ±ΟΞ¬ΞΌΞµΟ„ΟΞΏ Ο„Ξ·Ξ½ Ξ»ΟΟƒΞ· ΞµΞ½ΟΟ‚ Ο€ΟΞΏΞ²Ξ»Ξ®ΞΌΞ±Ο„ΞΏΟ‚ knapsack_problem
+   ΞΊΞ±ΞΉ ΞµΞΊΟ„Ο…Ο€ΟΞ½ΞµΞΉ Ο„Ξ± ΟƒΟ„ΞΏΞΉΟ‡ΞµΞ―Ξ± Ο„ΞΏΟ…
  */
 void print_solution(std::vector<item> sol) {
-   // std::string output;
+
     int total_weight = 0;
     int total_profit = 0;
 
@@ -339,7 +336,7 @@ void print_solution(std::vector<item> sol) {
 }
 /* export_solution
 
-   Η export_solution  αποθηκεύει τη λύση ενός knapsach προβλήματος σε ένα αρχείο
+   Ξ— export_solution  Ξ±Ο€ΞΏΞΈΞ·ΞΊΞµΟΞµΞΉ Ο„Ξ· Ξ»ΟΟƒΞ· ΞµΞ½ΟΟ‚ knapsach Ο€ΟΞΏΞ²Ξ»Ξ®ΞΌΞ±Ο„ΞΏΟ‚ ΟƒΞµ Ξ­Ξ½Ξ± Ξ±ΟΟ‡ΞµΞ―ΞΏ
  */
 void export_solution(knapsack_problem& ks, std::vector<item> sol, std::string& fn)
 {   std::fstream fout;
@@ -350,7 +347,6 @@ void export_solution(knapsack_problem& ks, std::vector<item> sol, std::string& f
         exit(-1);
     }
 
-    std::string output;
      int total_weight = 0;
     int total_profit = 0;
     for (int i = 0;i < sol.size();i++)
@@ -380,7 +376,7 @@ void calc_p_w(std::vector<item>& solution, std::fstream& fout) {
     fout << s;
 }
 /*
-   Η export_csv βρίσκει τις λύσεις με όλους τους δυνατούς αλγόριθμους και εξάγει το αποτέλεσμα σε αρχείο CSV
+   Ξ— export_csv Ξ²ΟΞ―ΟƒΞΊΞµΞΉ Ο„ΞΉΟ‚ Ξ»ΟΟƒΞµΞΉΟ‚ ΞΌΞµ ΟΞ»ΞΏΟ…Ο‚ Ο„ΞΏΟ…Ο‚ Ξ΄Ο…Ξ½Ξ±Ο„ΞΏΟΟ‚ Ξ±Ξ»Ξ³ΟΟΞΉΞΈΞΌΞΏΟ…Ο‚ ΞΊΞ±ΞΉ ΞµΞΎΞ¬Ξ³ΞµΞΉ Ο„ΞΏ Ξ±Ο€ΞΏΟ„Ξ­Ξ»ΞµΟƒΞΌΞ± ΟƒΞµ Ξ±ΟΟ‡ΞµΞ―ΞΏ CSV
  */
 void export_csv(int choice) {
     int n1[] = { 10,50,100,500 };
@@ -393,8 +389,8 @@ void export_csv(int choice) {
     std::fstream fout;
     std::cout << "----- csv_path=" << csv_path << "\n";
     fout.open(csv_path, std::ios::out);
-    if (!fout.good()) {     // Ελέγχουμε αν δεν έχει δημιουργηθεί
-        std::cerr << "--- Error opening file " << csv_path << std::endl;   // εκτυπώνουμε μήνυμα λάθους σε αυτή την περίπτωση
+    if (!fout.good()) {
+        std::cerr << "--- Error opening file " << csv_path << std::endl;
         system("pause");
         exit(-1);
     }
