@@ -30,3 +30,6 @@ You can create a CSV files with the solutions of all problems with 6 algorithms
 **P.S. Important!!!All of these files must be in the same folder.** 
 
 **You can visit my github website for Knapsacak problem at https://azacharis.github.io/0-1-Knapsack-Problem**
+
+
+**Copyright © Aristotelis Zacharis 2020**
