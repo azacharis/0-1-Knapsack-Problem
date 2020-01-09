@@ -87,11 +87,8 @@ std::vector <item> greedy_approach_solver(knapsack_problem& ks)
         }
 
         else
-        {
-            int remain = ks.capacity - current_weight;
-            finalprofit += tempItem.profit * ((double)remain / tempItem.weight);
-            break;
-        }
+        break;
+      
         auto finish = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(finish - begin);
         last_sol_time = duration.count() / 1000.0;
